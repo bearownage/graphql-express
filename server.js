@@ -144,9 +144,8 @@ const RootQueryType = new GraphQLObjectType({
                 //var result = null;
 
                 var second = {};
-
-                async () => {
-                    docClient.get(params, function(err, data) {
+                const result = async () => {
+                        const response = await docClient.get(params, function(err, data) {
                             if (err) {
                                 console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
                                 return null;
@@ -160,9 +159,16 @@ const RootQueryType = new GraphQLObjectType({
                                 return data.Item;
                             }
                     });
+
+                    //console.log(response);
+                    return response;
                 }
 
-                               
+                (async () => {
+                    console.log(await result())
+                    //console.log(second);
+                })()               
+
             }
         }
             
