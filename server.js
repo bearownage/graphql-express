@@ -20,7 +20,8 @@ const {
     GraphQLList,
     GraphQLInt,
     GraphQLNonNull
-} = require('graphql')
+} = require('graphql');
+const { ServerlessApplicationRepository } = require('aws-sdk');
 
 const app = express()
 
@@ -58,7 +59,7 @@ const MovieType = new GraphQLObjectType({
 
 const AuthorType = new GraphQLObjectType({
     name: 'Author',
-    description: 'This represents an author of a boook',
+    description: 'This represents an author of a book',
     fields: () => ({
         id: { type: GraphQLNonNull(GraphQLInt) },
         name: { type: GraphQLNonNull(GraphQLString)},
@@ -106,7 +107,10 @@ const RootQueryType = new GraphQLObjectType({
             type: new GraphQLList(BookType),
             description: 'List of All books',
             //Query databse here
-            resolve: () => books
+            resolve: () =>  {
+                console.log(books)
+                return books
+            }
         },
         authors: {
             type: new GraphQLList(AuthorType),
@@ -137,15 +141,28 @@ const RootQueryType = new GraphQLObjectType({
                     }
                 };
 
-                var result = docClient.get(params, function(err, data) {
-                    if (err) {
-                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-                    } else {
-                        console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
-                    }
-                });
+                //var result = null;
 
-                return result;
+                var second = {};
+
+                async () => {
+                    docClient.get(params, function(err, data) {
+                            if (err) {
+                                console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                                return null;
+                            } else {
+                                //console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+                                //console.log(data.Item);
+                                //result = JSON.stringify(data.Item, null, 2);
+                                //console.log(result);
+                                second = data.Item;
+                                console.log(second);
+                                return data.Item;
+                            }
+                    });
+                }
+
+                               
             }
         }
             
