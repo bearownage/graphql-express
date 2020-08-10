@@ -1,6 +1,18 @@
 const express = require('express')
 const expressGraphQL = require('express-graphql')
 var AWS = require("aws-sdk");
+
+var conf = require('./conf');
+
+AWS.config.update({
+    region: "us-east-2",
+    accessKeyId: conf.aws_key,
+    secretAccessKey: conf.aws_secret_key    
+  });
+
+var docClient = new AWS.DynamoDB.DocumentClient();
+
+
 const {
     GraphQLSchema,
     GraphQLObjectType,
@@ -9,21 +21,10 @@ const {
     GraphQLInt,
     GraphQLNonNull
 } = require('graphql')
+
 const app = express()
 
-/*
-const schema = new GraphQLSchema({
-    query: new GraphQLObjectType({
-        name : 'HelloWorld',
-        fields: () => ({
-            message: { 
-                type: GraphQLString,
-                resolve: () => 'Hello World' 
-            }
-        })
-    })
-})
-*/
+var table = "films";
 
 const authors = [
     { id: 1, name: 'J.K Rowling'},
@@ -42,6 +43,18 @@ const books = [
     { id: 8, name: 'Beyond the Shadows', authorId: 3}
 ]
 
+const MovieType = new GraphQLObjectType({
+    name: 'Movie',
+    description: 'This represents a movie',
+    fields: () => ({
+        movie_id : { type: GraphQLNonNull(GraphQLInt)},
+        title: { type: GraphQLNonNull(GraphQLString)},
+        description : { type: GraphQLNonNull(GraphQLString)},
+        popularity: { type: GraphQLNonNull(GraphQLInt)},
+        rating: { type: GraphQLNonNull(GraphQLInt)},
+        release_date : { type: GraphQLNonNull(GraphQLString)}
+    })
+})
 
 const AuthorType = new GraphQLObjectType({
     name: 'Author',
@@ -109,9 +122,34 @@ const RootQueryType = new GraphQLObjectType({
             },
             //Query databse here
             resolve: (parent, args) => authors.find(author => author.id === args.id)
-        
+        },
+        movie: {
+            type: MovieType,
+            description: 'A single movie',
+            args: {
+                id: { type: GraphQLInt }
+            },
+            resolve : (parent, args) => {
+                var params = {
+                    TableName: table,
+                    Key:{
+                        "movie_id": args.id
+                    }
+                };
 
+                var result = docClient.get(params, function(err, data) {
+                    if (err) {
+                        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                    } else {
+                        console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+                    }
+                });
+
+                return result;
+            }
         }
+            
+        
     })
 })
 
