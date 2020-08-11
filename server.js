@@ -49,9 +49,9 @@ const MovieType = new GraphQLObjectType({
     description: 'This represents a movie',
     fields: () => ({
         movie_id : { type: GraphQLNonNull(GraphQLInt)},
+        popularity: { type: GraphQLNonNull(GraphQLInt)},
         title: { type: GraphQLNonNull(GraphQLString)},
         description : { type: GraphQLNonNull(GraphQLString)},
-        popularity: { type: GraphQLNonNull(GraphQLInt)},
         rating: { type: GraphQLNonNull(GraphQLInt)},
         release_date : { type: GraphQLNonNull(GraphQLString)}
     })
@@ -140,11 +140,8 @@ const RootQueryType = new GraphQLObjectType({
                         "movie_id": args.id
                     }
                 };
-
-                //var result = null;
-
                 var second = {};
-                const result = async () => {
+                const result = async (params, fn) => {
                         const response = await docClient.get(params, function(err, data) {
                             if (err) {
                                 console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
@@ -152,20 +149,17 @@ const RootQueryType = new GraphQLObjectType({
                             } else {
                                 //console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
                                 //console.log(data.Item);
-                                //result = JSON.stringify(data.Item, null, 2);
-                                //console.log(result);
-                                second = data.Item;
-                                console.log(second);
-                                return data.Item;
+                                fn(data.Item);
                             }
                     });
-
-                    //console.log(response);
                     return response;
                 }
 
                 (async () => {
-                    console.log(await result())
+                    await result(params, function(data) {
+                        console.log(data);
+                        return data;
+                    });
                     //console.log(second);
                 })()               
 
