@@ -212,6 +212,12 @@ const RootMutationType = new GraphQLObjectType({
             args : {
                 title: {
                     type: GraphQLNonNull(GraphQLString)
+                },
+                year: {
+                    type: GraphQLNonNull(GraphQLString)
+                },
+                description: {
+                    type: GraphQLNonNull(GraphQLString)
                 }
             },
             resolve: (parent, args) => {
