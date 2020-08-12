@@ -155,12 +155,13 @@ const RootQueryType = new GraphQLObjectType({
                     return response;
                 }
 
+
                 (async () => {
                     await result(params, function(data) {
                         console.log(data);
+                        //second = data;
                         return data;
                     });
-                    //console.log(second);
                 })()               
 
             }
@@ -204,6 +205,34 @@ const RootMutationType = new GraphQLObjectType({
                 authors.push(author)
                 return author   
             }
+        },
+        addMovie: {
+            type: MovieType,
+            description: 'Add a movie',
+            args : {
+                title: {
+                    type: GraphQLNonNull(GraphQLString)
+                }
+            },
+            resolve: (parent, args) => {
+                var params = {
+                    TableName: "films",
+                    Item: {
+                        "year":  args.year,
+                        "title": args.title,
+                        "description":  args.info
+                    }
+                };
+            
+                docClient.put(params, function(err, data) {
+                   if (err) {
+                       console.error("Unable to add movie", args.title, ". Error JSON:", JSON.stringify(err, null, 2));
+                   } else {
+                       console.log("PutItem succeeded:", args.title);
+                   }
+                });   
+            }
+
         }
     })
 })
