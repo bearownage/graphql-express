@@ -1,16 +1,6 @@
 const express = require('express')
 const expressGraphQL = require('express-graphql')
-var AWS = require("aws-sdk");
-
-var conf = require('./conf');
-
-AWS.config.update({
-    region: "us-east-2",
-    accessKeyId: conf.aws_key,
-    secretAccessKey: conf.aws_secret_key    
-  });
-
-var docClient = new AWS.DynamoDB.DocumentClient();
+var query = require('./query');
 
 
 const {
@@ -26,25 +16,6 @@ const { ServerlessApplicationRepository } = require('aws-sdk');
 const { response } = require('express');
 
 const app = express()
-
-
-async function getData(args) {
-    var params = {
-        TableName: table,
-        Key:{
-            "movie_id": args.id
-        }
-    };
-
-    try {
-        const response =  await docClient.get(params).promise();
-        console.log(response.Item);
-        return response.Item;
-    } catch (err) {
-        console.log(err);
-        return null;
-    }
-}
 
 var table = "films";
 
@@ -70,11 +41,11 @@ const MovieType = new GraphQLObjectType({
     description: 'This represents a movie',
     fields: () => ({
         movie_id : { type: GraphQLNonNull(GraphQLInt)},
-        popularity: { type: GraphQLNonNull(GraphQLFloat)},
+        popularity: { type: (GraphQLFloat)},
         title: { type: GraphQLNonNull(GraphQLString)},
-        description : { type: GraphQLNonNull(GraphQLString)},
-        rating: { type: GraphQLNonNull(GraphQLFloat)},
-        release_date : { type: GraphQLNonNull(GraphQLString)}
+        description : { type: (GraphQLString)},
+        rating: { type: (GraphQLFloat)},
+        release_date : { type: (GraphQLString)}
     })
 })
 
@@ -154,7 +125,7 @@ const RootQueryType = new GraphQLObjectType({
             args: {
                 id: { type: GraphQLInt }
             },
-            resolve : (parent, args) => getData(args),          
+            resolve : (parent, args) => query.getData(args),          
         }
             
         
