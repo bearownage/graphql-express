@@ -19,9 +19,11 @@ const {
     GraphQLString,
     GraphQLList,
     GraphQLInt,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLFloat
 } = require('graphql');
 const { ServerlessApplicationRepository } = require('aws-sdk');
+const { response } = require('express');
 
 const app = express()
 
@@ -34,11 +36,14 @@ async function getData(args) {
         }
     };
 
-    const response =  await docClient.get(params);
-
-    console.log(response.response.data);
-
-    return response.response.data;
+    try {
+        const response =  await docClient.get(params).promise();
+        console.log(response.Item);
+        return response.Item;
+    } catch (err) {
+        console.log(err);
+        return null;
+    }
 }
 
 var table = "films";
@@ -65,10 +70,10 @@ const MovieType = new GraphQLObjectType({
     description: 'This represents a movie',
     fields: () => ({
         movie_id : { type: GraphQLNonNull(GraphQLInt)},
-        popularity: { type: GraphQLNonNull(GraphQLInt)},
+        popularity: { type: GraphQLNonNull(GraphQLFloat)},
         title: { type: GraphQLNonNull(GraphQLString)},
         description : { type: GraphQLNonNull(GraphQLString)},
-        rating: { type: GraphQLNonNull(GraphQLInt)},
+        rating: { type: GraphQLNonNull(GraphQLFloat)},
         release_date : { type: GraphQLNonNull(GraphQLString)}
     })
 })
