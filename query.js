@@ -30,8 +30,21 @@ async function getData(args) {
     }
 }
 
-async function queryData(args, table) {
+async function scanData() {
+    var params = {
+        TableName: table,
+        ProjectionExpression: "movie_id, title, popularity, release_date, rating, description"
+    };
 
+    try {
+        const response =  await docClient.scan(params).promise();
+        console.log(response.Items);
+        return response.Items;
+    } catch (err) {
+        console.log(err);
+        return null;
+    }
 }
 
 module.exports.getData = getData;
+module.exports.scanData = scanData;

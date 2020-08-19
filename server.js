@@ -126,6 +126,11 @@ const RootQueryType = new GraphQLObjectType({
                 id: { type: GraphQLInt }
             },
             resolve : (parent, args) => query.getData(args),          
+        },
+        movies: {
+            type: new GraphQLList(MovieType),
+            descrption: 'A list of every movie',
+            resolve : () => query.scanData(),
         }
             
         
