@@ -25,6 +25,22 @@ const { ServerlessApplicationRepository } = require('aws-sdk');
 
 const app = express()
 
+
+async function getData(args) {
+    var params = {
+        TableName: table,
+        Key:{
+            "movie_id": args.id
+        }
+    };
+
+    const response =  await docClient.get(params);
+
+    console.log(response.response.data);
+
+    return response.response.data;
+}
+
 var table = "films";
 
 const authors = [
@@ -133,38 +149,7 @@ const RootQueryType = new GraphQLObjectType({
             args: {
                 id: { type: GraphQLInt }
             },
-            resolve : (parent, args) => {
-                var params = {
-                    TableName: table,
-                    Key:{
-                        "movie_id": args.id
-                    }
-                };
-                var second = {};
-                const result = async (params, fn) => {
-                        const response = await docClient.get(params, function(err, data) {
-                            if (err) {
-                                console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-                                return null;
-                            } else {
-                                //console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
-                                //console.log(data.Item);
-                                fn(data.Item);
-                            }
-                    });
-                    return response;
-                }
-
-
-                (async () => {
-                    await result(params, function(data) {
-                        console.log(data);
-                        //second = data;
-                        return data;
-                    });
-                })()               
-
-            }
+            resolve : (parent, args) => getData(args),          
         }
             
         
